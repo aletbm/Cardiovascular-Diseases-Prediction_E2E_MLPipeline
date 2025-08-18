@@ -252,6 +252,8 @@ make gcp-deploy
 
 ![gcp](./src/gcp.png)
 
+The API home is available [here](https://cardiovascular-diseases-api-761922006747.us-east1.run.app).
+
 ---
 
 ### ☁️ 5. Infrastructure provisioning with Terraform
