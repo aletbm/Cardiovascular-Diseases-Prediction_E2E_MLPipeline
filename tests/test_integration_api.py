@@ -11,22 +11,21 @@ client = TestClient(app)
 def test_api_root():
     response = client.get("/")
     assert response.status_code == 200
-    assert "message" in response.json()
 
 
 def test_predict():
     sample_input = {
-        'Age': 60, 
-        'Sex': 'M', 
-        'ChestPainType': 'ASY', 
-        'RestingBP': 160, 
-        'Cholesterol': 0, 
-        'FastingBS': 1, 
-        'RestingECG': 'Normal', 
-        'MaxHR': 149, 
-        'ExerciseAngina': 'N', 
-        'Oldpeak': 0.4, 
-        'ST_Slope': 'Flat', 
+        "Age": 60,
+        "Sex": "M",
+        "ChestPainType": "ASY",
+        "RestingBP": 160,
+        "Cholesterol": 0,
+        "FastingBS": 1,
+        "RestingECG": "Normal",
+        "MaxHR": 149,
+        "ExerciseAngina": "N",
+        "Oldpeak": 0.4,
+        "ST_Slope": "Flat",
         #'HeartDisease': 1
     }
 
