@@ -195,7 +195,7 @@ Each run is logged in MLflow with metrics (ROC AUC, F1, Accuracy, etc.) and arti
 
 ---
 
-### 🚀 3. API Serving with Flask and Docker
+### 🚀 3. API Serving with FastAPI and Docker
 
 Once a model is trained, serve it locally via FastAPI:
 
