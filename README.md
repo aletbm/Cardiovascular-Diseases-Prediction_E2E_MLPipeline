@@ -318,6 +318,8 @@ Tests include:
 
 The `.github/workflows/ci.yml` defines GitHub Actions workflows that run on push/PR:
 
+![cicd](./src/cicd.png)
+
 - **setup**: install dependencies with pipenv
 - **lint**: enforce code style (black, flake8)
 - **test**: run pytest (unit + integration)
