@@ -289,6 +289,8 @@ This generates:
 - `monitoring/full_monitor_report.html` (detailed drift & performance report)
 - Slack alert if drift threshold exceeded
 
+![slack](./src/slack.png)
+
 If drift is detected, Prefect triggers retraining.
 
 You can view the monitoring report [here](https://aletbm.github.io/Cardiovascular-Diseases_E2E_MLPipeline/full_monitor_report.html).

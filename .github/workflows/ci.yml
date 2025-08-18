@@ -93,7 +93,7 @@ jobs:
         run: gcloud auth configure-docker
 
       - name: Build and push Docker image to GCR
-        run: make gcloud-build
+        run: make gcp-deploy
 
       - name: Clean up credentials
         run: rm $HOME/gcp-key.json
