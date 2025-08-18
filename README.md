@@ -51,7 +51,7 @@ To build a **robust ML system** that:
 
 - **MLflow** – experiment tracking & model registry
 - **Prefect** – orchestration of training and inference flows
-- **Flask** – lightweight REST API for predictions
+- **FastAPI** – lightweight REST API for predictions
 - **Docker** – containerization
 - **Terraform** – infrastructure as code (GCP)
 - **Evidently AI** – monitoring & drift detection
@@ -197,7 +197,7 @@ Each run is logged in MLflow with metrics (ROC AUC, F1, Accuracy, etc.) and arti
 
 ### 🚀 3. API Serving with Flask and Docker
 
-Once a model is trained, serve it locally via Flask:
+Once a model is trained, serve it locally via FastAPI:
 
 ```bash
 make run-api
