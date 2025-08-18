@@ -109,7 +109,7 @@ To build a **robust ML system** that:
 | `make run-training ALIAS=MyModel`        | Trigger Prefect training flow |
 | `make run-inference ALIAS=MyModel`       | Run batch inference pipeline |
 | `make run-monitoring ALIAS=MyModel`      | Run Evidently monitoring |
-| `make run-api`                           | Run Flask API in Docker |
+| `make run-api`                           | Run FastAPI in Docker |
 | `make test-remote`                       | Test `/predict` endpoint |
 | `make build-image`                       | Build Docker image locally |
 | `make gcp-deploy`                        | Build & push image to GCP Container Registry |
