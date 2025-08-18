@@ -22,19 +22,23 @@ def load_data(filename):
 def split_X_y(test, target):
     return test.drop(target, axis=1), test[target]
 
+
 @task
 def transform_data(X, continuos_f, categorical_f):
-    X["Sex"] = X["Sex"].map({'M':1, 'F':0})
-    X["ExerciseAngina"] = X["ExerciseAngina"].map({'N':0, 'Y':1})
+    X["Sex"] = X["Sex"].map({"M": 1, "F": 0})
+    X["ExerciseAngina"] = X["ExerciseAngina"].map({"N": 0, "Y": 1})
 
-    X[ohe.get_feature_names_out()] = ohe.transform(X[categorical_f]).toarray().astype('int8')
+    X[ohe.get_feature_names_out()] = (
+        ohe.transform(X[categorical_f]).toarray().astype("int8")
+    )
     X.drop(categorical_f, axis=1, inplace=True)
-    
+
     X = X[selected_features].copy()
     X[continuos_f] = ss.transform(X[continuos_f])
     X = fs.transform(X)
 
     return X
+
 
 @task
 def prepare_data(test):
@@ -124,16 +128,16 @@ if __name__ == "__main__":
 
     with open(model_path, "rb") as f:
         model = cloudpickle.load(f)
-    
+
     with open(ohe_path, "rb") as f:
         ohe = cloudpickle.load(f)
 
-    with open(fs_vif_path, 'r') as f:
+    with open(fs_vif_path, "r") as f:
         selected_features = json.load(f)
 
     with open(ss_path, "rb") as f:
         ss = cloudpickle.load(f)
-    
+
     with open(fs_path, "rb") as f:
         fs = cloudpickle.load(f)
 

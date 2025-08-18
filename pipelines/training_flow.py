@@ -31,15 +31,24 @@ from imblearn.over_sampling import SMOTE
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import config as cfg
 
+
 @task
 def load_data():
-    df = pd.read_csv(cfg.DATA_FOLDER + 'heart.csv')
+    df = pd.read_csv(cfg.DATA_FOLDER + "heart.csv")
     return df
+
 
 @task
 def split_data(df, target):
-    train_X, test_X, train_y, test_y = train_test_split(df.drop([target], axis=1), df[target], test_size=0.25, random_state=cfg.SEED_VALUE, stratify=df[target])
+    train_X, test_X, train_y, test_y = train_test_split(
+        df.drop([target], axis=1),
+        df[target],
+        test_size=0.25,
+        random_state=cfg.SEED_VALUE,
+        stratify=df[target],
+    )
     return train_X, test_X, train_y, test_y
+
 
 @task
 def detect_outliers(train, columns, tipo="leve", test=None):
@@ -55,9 +64,12 @@ def detect_outliers(train, columns, tipo="leve", test=None):
         Q3 = train_[col].quantile(0.75)
         IQR = Q3 - Q1
         for dataset in [train_, test_]:
-            interval = ((dataset[col] < Q1 - k*IQR) | (dataset[col] > Q3 + k*IQR))
-            dataset.loc[interval, col] = dataset.groupby(["ChestPainType", "RestingECG", "ST_Slope"])[col].transform('median')[interval]
+            interval = (dataset[col] < Q1 - k * IQR) | (dataset[col] > Q3 + k * IQR)
+            dataset.loc[interval, col] = dataset.groupby(
+                ["ChestPainType", "RestingECG", "ST_Slope"]
+            )[col].transform("median")[interval]
     return train_, test_, describe
+
 
 @task
 def clean_data(X, y):
@@ -66,31 +78,40 @@ def clean_data(X, y):
     y.drop(index, axis=0, inplace=True)
     return X, y
 
+
 @task
 def encode_data(X_train, X_test, categorical_f):
     for dataset in [X_train, X_test]:
-        dataset["Sex"] = dataset["Sex"].map({'M':1, 'F':0})
-        dataset["ExerciseAngina"] = dataset["ExerciseAngina"].map({'N':0, 'Y':1})
+        dataset["Sex"] = dataset["Sex"].map({"M": 1, "F": 0})
+        dataset["ExerciseAngina"] = dataset["ExerciseAngina"].map({"N": 0, "Y": 1})
 
-    ohe = OneHotEncoder(handle_unknown='ignore')
+    ohe = OneHotEncoder(handle_unknown="ignore")
     ohe.fit(X_train[categorical_f])
 
     for dataset in [X_train, X_test]:
-        dataset[ohe.get_feature_names_out()] = ohe.transform(dataset[categorical_f]).toarray().astype('int8')
+        dataset[ohe.get_feature_names_out()] = (
+            ohe.transform(dataset[categorical_f]).toarray().astype("int8")
+        )
         dataset.drop(categorical_f, axis=1, inplace=True)
 
     return X_train, X_test, ohe
 
+
 @task
 def detect_VIF(df):
     df_ = df.copy()
-    df_['intercept'] = 1
-    with np.errstate(divide='ignore'):
-        while(True):
+    df_["intercept"] = 1
+    with np.errstate(divide="ignore"):
+        while True:
             df_vif = pd.DataFrame(columns=["Features", "VIF"])
             df_vif["Features"] = df_.columns
-            df_vif["VIF"] = [variance_inflation_factor(df_.values, i) for i in range(len(df_.columns))]
-            df_vif = df_vif[df_vif["Features"] != "intercept"].sort_values("VIF", ascending=False)
+            df_vif["VIF"] = [
+                variance_inflation_factor(df_.values, i)
+                for i in range(len(df_.columns))
+            ]
+            df_vif = df_vif[df_vif["Features"] != "intercept"].sort_values(
+                "VIF", ascending=False
+            )
             if df_vif.iloc[0]["VIF"] > 5:
                 df_.drop([df_vif.iloc[0]["Features"]], axis=1, inplace=True)
             else:
@@ -98,12 +119,14 @@ def detect_VIF(df):
                 break
     df_.drop(["intercept"], axis=1, inplace=True)
     return df, df_vif
-        
+
+
 @task
 def oversample_data(X_train, y_train):
     oversampler = SMOTE(random_state=42, k_neighbors=10)
     X_train, y_train = oversampler.fit_resample(X_train, y_train)
     return X_train, y_train, oversampler
+
 
 @task
 def scale_data(X_train, X_test, continuos_f):
@@ -112,12 +135,14 @@ def scale_data(X_train, X_test, continuos_f):
     X_test[continuos_f] = ss.transform(X_test[continuos_f])
     return X_train, X_test, ss
 
+
 @task
 def feature_selection(X_train, y_train, X_test):
     fs_clf = SelectKBest(score_func=f_classif, k=15)
     X_train = fs_clf.fit_transform(X_train, y_train)
     X_test = fs_clf.transform(X_test)
     return X_train, X_test, fs_clf
+
 
 def get_scores(y_true, y_pred, y_pred_proba):
     return {
@@ -130,19 +155,26 @@ def get_scores(y_true, y_pred, y_pred_proba):
         ),
     }
 
+
 @task
-def training(X_train, y_train, X_test, y_test, metric="recall", cv=8, model_alias="challenger"):
+def training(
+    X_train, y_train, X_test, y_test, metric="recall", cv=8, model_alias="challenger"
+):
     with mlflow.start_run():
-        param_grid = [{
-            'n_neighbors':np.arange(5, 21),
-            'weights':['uniform', 'distance'],
-            'p':[1, 2],
-        }]
+        param_grid = [
+            {
+                "n_neighbors": np.arange(5, 21),
+                "weights": ["uniform", "distance"],
+                "p": [1, 2],
+            }
+        ]
 
         knn_clf = KNeighborsClassifier()
-        grid_knn = GridSearchCV(knn_clf, param_grid, cv=cv, scoring=["f1", metric], refit="f1")
+        grid_knn = GridSearchCV(
+            knn_clf, param_grid, cv=cv, scoring=["f1", metric], refit="f1"
+        )
         grid_knn.fit(X_train, y_train)
-    
+
         y_pred = grid_knn.predict(X_test)
         y_pred_proba = grid_knn.predict_proba(X_test)[:, 1]
         scores = get_scores(y_test, y_pred, y_pred_proba)
@@ -165,7 +197,7 @@ def training(X_train, y_train, X_test, y_test, metric="recall", cv=8, model_alia
             signature=mlflow.models.infer_signature(X_train, grid_knn.predict(X_train)),
             input_example=X_train[0:2],
         )
-        
+
         ohe_path = os.path.join(cfg.MODEL_FOLDER, "ohe.pkl")
         fs_vif_path = os.path.join(cfg.MODEL_FOLDER, "fs_vif.json")
         ovs_path = os.path.join(cfg.MODEL_FOLDER, "ovs.pkl")
@@ -177,7 +209,7 @@ def training(X_train, y_train, X_test, y_test, metric="recall", cv=8, model_alia
         mlflow.log_artifact(ovs_path, artifact_path="preprocessing")
         mlflow.log_artifact(ss_path, artifact_path="preprocessing")
         mlflow.log_artifact(fs_path, artifact_path="preprocessing")
-        
+
         os.remove(ohe_path)
         os.remove(fs_vif_path)
         os.remove(ovs_path)
@@ -214,6 +246,7 @@ def training(X_train, y_train, X_test, y_test, metric="recall", cv=8, model_alia
 
     return grid_knn
 
+
 @task
 def upload_model_artifacts_to_gcs(project_id, bucket_name, local_dir, prefix=""):
     client = storage.Client(project=project_id)
@@ -230,6 +263,7 @@ def upload_model_artifacts_to_gcs(project_id, bucket_name, local_dir, prefix="")
             print(f"Uploaded {local_path} to gs://{bucket_name}/{blob_path}")
     return
 
+
 @flow(name="Cardiovascular Diseases ML Pipeline", retries=1, retry_delay_seconds=300)
 def cardiovascular_diseases_pipeline(model_alias):
     df = load_data()
@@ -244,8 +278,10 @@ def cardiovascular_diseases_pipeline(model_alias):
         y_train,
         y_test,
     ) = split_data(df, target)
-    
-    X_train, X_test, _ = detect_outliers(X_train, ["RestingBP", "Cholesterol", "Oldpeak"], "leve", X_test)
+
+    X_train, X_test, _ = detect_outliers(
+        X_train, ["RestingBP", "Cholesterol", "Oldpeak"], "leve", X_test
+    )
     X_train, y_train = clean_data(X_train, y_train)
     X_train, X_test, ohe = encode_data(X_train, X_test, categorical_f)
     X_train, _ = detect_VIF(X_train)
@@ -276,6 +312,7 @@ def cardiovascular_diseases_pipeline(model_alias):
         local_dir="models",
         prefix="run_artifacts",
     )
+
 
 if __name__ == "__main__":
 

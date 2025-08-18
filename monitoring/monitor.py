@@ -39,23 +39,17 @@ def load_model_and_artifacts(model_alias):
     run_id = model_version.run_id
 
     model = mlflow.pyfunc.load_model(f"models:/{cfg.MODEL_NAME}@{model_alias}")
-    ohe_path = client.download_artifacts(
-        run_id, "preprocessing/ohe.pkl", ARTIFACT_DIR
-    )
+    ohe_path = client.download_artifacts(run_id, "preprocessing/ohe.pkl", ARTIFACT_DIR)
     fs_vif_path = client.download_artifacts(
         run_id, "preprocessing/fs_vif.json", ARTIFACT_DIR
     )
-    ss_path = client.download_artifacts(
-        run_id, "preprocessing/ss.pkl", ARTIFACT_DIR
-    )
-    fs_path = client.download_artifacts(
-        run_id, "preprocessing/fs.pkl", ARTIFACT_DIR
-    )
+    ss_path = client.download_artifacts(run_id, "preprocessing/ss.pkl", ARTIFACT_DIR)
+    fs_path = client.download_artifacts(run_id, "preprocessing/fs.pkl", ARTIFACT_DIR)
 
     with open(ohe_path, "rb") as f:
         ohe = cloudpickle.load(f)
 
-    with open(fs_vif_path, 'r') as f:
+    with open(fs_vif_path, "r") as f:
         selected_features = json.load(f)
 
     with open(ss_path, "rb") as f:
@@ -69,12 +63,16 @@ def load_model_and_artifacts(model_alias):
 
 @task
 def split_data(df, target):
-    df_train, df_test = train_test_split(df, test_size=0.25, random_state=cfg.SEED_VALUE, stratify=df[target])
+    df_train, df_test = train_test_split(
+        df, test_size=0.25, random_state=cfg.SEED_VALUE, stratify=df[target]
+    )
     return df_train, df_test
 
 
 @task
-def prepare_datasets(model, ohe, selected_features, ss, fs, train_df, test_df, target_col="HeartDisease"):
+def prepare_datasets(
+    model, ohe, selected_features, ss, fs, train_df, test_df, target_col="HeartDisease"
+):
     continuos_f = ["Age", "RestingBP", "Cholesterol", "MaxHR", "Oldpeak"]
     categorical_f = ["ChestPainType", "RestingECG", "ST_Slope"]
 
@@ -82,12 +80,14 @@ def prepare_datasets(model, ohe, selected_features, ss, fs, train_df, test_df, t
         X = df.drop(columns=[target_col], axis=1).copy()
         y = df[target_col].copy()
 
-        X["Sex"] = X["Sex"].map({'M':1, 'F':0})
-        X["ExerciseAngina"] = X["ExerciseAngina"].map({'N':0, 'Y':1})
+        X["Sex"] = X["Sex"].map({"M": 1, "F": 0})
+        X["ExerciseAngina"] = X["ExerciseAngina"].map({"N": 0, "Y": 1})
 
-        X[ohe.get_feature_names_out()] = ohe.transform(X[categorical_f]).toarray().astype('int8')
+        X[ohe.get_feature_names_out()] = (
+            ohe.transform(X[categorical_f]).toarray().astype("int8")
+        )
         X.drop(categorical_f, axis=1, inplace=True)
-        
+
         X = X[selected_features].copy()
         X[continuos_f] = ss.transform(X[continuos_f])
         X = fs.transform(X)
@@ -232,10 +232,21 @@ def monitoring_flow(model_alias):
     flow_name = prefect.runtime.flow_run.name
     msg = "Monitoring started."
     send_slack_alert(msg, state="INFO", flow_name=flow_name)
-    model, ohe, selected_features, ss, fs = load_model_and_artifacts(model_alias=model_alias)
+    model, ohe, selected_features, ss, fs = load_model_and_artifacts(
+        model_alias=model_alias
+    )
     df = load_data()
     train_df, test_df = split_data(df, target="HeartDisease")
-    ds_train, ds_test = prepare_datasets(model, ohe, selected_features, ss, fs, train_df, test_df, target_col="HeartDisease")
+    ds_train, ds_test = prepare_datasets(
+        model,
+        ohe,
+        selected_features,
+        ss,
+        fs,
+        train_df,
+        test_df,
+        target_col="HeartDisease",
+    )
     drift_score = run_monitoring(ds_train, ds_test)
     check_drift_and_maybe_retrain(
         drift_score, model_alias=model_alias, flow_name=flow_name
