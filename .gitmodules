@@ -1,0 +1,3 @@
+[submodule "analysis"]
+	path = analysis
+	url = https://github.com/aletbm/Cardiovascular-Diseases_EDA-Modeling.git
