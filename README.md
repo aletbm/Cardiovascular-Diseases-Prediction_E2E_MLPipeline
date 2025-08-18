@@ -293,7 +293,7 @@ This generates:
 
 If drift is detected, Prefect triggers retraining.
 
-You can view the monitoring report [here](https://aletbm.github.io/Cardiovascular-Diseases_E2E_MLPipeline/full_monitor_report.html).
+You can view the monitoring report [here](https://aletbm.github.io/Cardiovascular-Diseases_E2E_MLPipeline/monitoring/full_monitor_report.html).
 
 ---
 
