@@ -18,7 +18,7 @@ Key components include:
 - Exploratory Data Analysis (EDA) and feature engineering.
 - Model training and evaluation with **MLflow tracking**.
 - Automated training pipelines orchestrated with **Prefect**.
-- Deployment of models via **Flask API** and **Docker**.
+- Deployment of models via **FastAPI** and **Docker**.
 - Infrastructure provisioning with **Terraform** on **Google Cloud (GCP)**.
 - Monitoring of model drift and prediction quality with **Evidently AI**.
 - CI/CD automation using **GitHub Actions**.
