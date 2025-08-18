@@ -12,14 +12,14 @@ load_dotenv()
 MLFLOW_TRACKING_URI = "http://localhost:5000"
 MLFLOW_EXPERIMENT_NAME = "cardiovascular_experiment"
 MODEL_NAME = "MyKNNClassifier"
-DRIFT_THRESHOLD = -3
+DRIFT_THRESHOLD = 0.3
 SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL")
 SEED_VALUE = 42
 
 INPUT_FOLDER = os.path.dirname(__file__)
 DATA_FOLDER = os.path.join(INPUT_FOLDER, "data/")
 MODEL_FOLDER = os.path.join(INPUT_FOLDER, "models/")
-REPORT_FOLDER = "./docs/"
+REPORT_FOLDER = "./monitoring/"
 
 def init_conn_mlflow():
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
