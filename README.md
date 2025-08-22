@@ -124,7 +124,7 @@ To build a **robust ML system** that:
 From the [EDA & modeling notebook](./analysis/cardiovascular-diseases-eda-modeling.ipynb):
 
 - Benchmarked models: Logistic Regression, Decision Trees, Random Forest, KNN, Gradient Boosting.
-- Best performing candidate: **KNeighborsClassifier** (based on ROC AUC and F1).
+- Best performing candidate: **KNeighborsClassifier** (based on Accuracy and F1).
 - Artifacts (preprocessing + models) are versioned under [`models/`](./models).
 
 ---
